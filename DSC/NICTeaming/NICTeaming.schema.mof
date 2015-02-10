@@ -1,0 +1,14 @@
+[version("1.0.0"), FriendlyName("Teaming")]
+class NICTeaming : MSFT_BaseResourceConfiguration
+{
+	[write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
+	[Key] string Name;
+ 	[write,ValueMap{"SwitchIndependent", "LACP", "Static"},Values{"SwitchIndependent", "LACP", "Static"}] string Mode;
+	[write,ValueMap{"Dynamic", "HyperVPort", "IPAddresses", "MacAddresses", "TransportPorts"},Values{"Dynamic", "HyperVPort", "IPAddresses", "MacAddresses", "TransportPorts"}] string LBMode;
+	[write] string VlanID[];
+	[write] string NICs[];
+	[write] string PipelineVariable;
+	[write] boolean WhatIf;
+	[write] boolean Confirm;
+};
+

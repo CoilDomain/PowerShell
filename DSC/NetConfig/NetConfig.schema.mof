@@ -1,0 +1,14 @@
+[version("1.0.0"), FriendlyName("NetConfig")]
+class NetConfig : MSFT_BaseResourceConfiguration
+{
+	[write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
+	[key] string Adapter;
+	[write] string IPAddress[];
+	[write] string DNSServers[];
+	[write] string Gateway;
+	[write,ValueMap{"Manual", "DHCP"},Values{"Manual", "DHCP"}] string Type;
+	[write] boolean RegisterDNS;
+        [write] string PipelineVariable;
+        [write] boolean WhatIf;
+        [write] boolean Confirm;
+};
