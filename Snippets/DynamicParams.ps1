@@ -14,7 +14,7 @@
 
         # [ValidateSet[(...)]
         $TemplatesNames = @()
-        foreach($TemplatesInfo in Get-Template) {
+        foreach($TemplatesInfo in Get-SCVMTemplate) {
             $TemplatesNames += $TemplatesInfo.Name
         }
         $TemplatesValidateSetAttribute = New-Object -type System.Management.Automation.ValidateSetAttribute($TemplatesNames)
