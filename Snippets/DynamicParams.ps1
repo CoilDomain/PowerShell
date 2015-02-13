@@ -9,7 +9,7 @@
         # )]
         $TemplatesParameterAttribute = new-object System.Management.Automation.ParameterAttribute
         $TemplatesParameterAttribute.Mandatory = $true
-        $TemplatesParameterAttribute.HelpMessage = "Enter one or more module names, separated by commas"
+        $TemplatesParameterAttribute.HelpMessage = "Enter A Template name"
         $TemplatesAttributeCollection.Add($TemplatesParameterAttribute)    
 
         # [ValidateSet[(...)]
