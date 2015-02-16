@@ -73,9 +73,9 @@ New-SCHardwareProfile -VMMServer localhost -CPUType $CPUType -Name $VMJobGroup -
 
 $Template = Get-SCVMTemplate -VMMServer localhost | where {$_.Name -eq $paramDictionary.Template.Value}
 $HardwareProfile = Get-SCHardwareProfile -VMMServer localhost | where {$_.Name -eq $VMJobGroup}
-$LocalAdministratorCredential = get-scrunasaccount -VMMServer "localhost" -Name "RunAs" -ID "7cb3df91-5aca-43b1-9d9a-6041f86c2161" ### Fix
+$LocalAdministratorCredential = Get-SCRunAsAccount | Where-Object {$_.Domain -notmatch "NT AUTHORITY"}
 
-$OperatingSystem = Get-SCOperatingSystem -VMMServer localhost  | where {$_.Name -eq "64-bit edition of Windows Server 2012 R2 Standard"}
+$OperatingSystem = Get-SCOperatingSystem -VMMServer localhost  | where {$_.Name -eq (Get-SCVMTemplate -name $paramDictionary.Template.Value).OperatingSystem.Name}
 
 New-SCVMTemplate -Name $VMJobGroup -Template $Template -HardwareProfile $HardwareProfile -JobGroup $VMJobGroup -ComputerName "$VMName" -TimeZone 35 -LocalAdministratorCredential $LocalAdministratorCredential  -AnswerFile $null -OperatingSystem $OperatingSystem 
 
