@@ -59,7 +59,7 @@ $VMJobGroup = [System.Guid]::NewGuid()
 
 New-SCVirtualScsiAdapter -VMMServer localhost -JobGroup $VMJobGroup -AdapterID 7 -ShareVirtualScsiAdapter $false -ScsiControllerType DefaultTypeNoType 
 New-SCVirtualDVDDrive -VMMServer localhost -JobGroup $VMJobGroup -Bus 1 -LUN 0 
-$VMNetwork = $paramDictionary.Network.Value
+$VMNetwork = Get-SCVMNetwork | Where-Object {$_.Name -match "$paramDictionary.Network.Value"}
 New-SCVirtualNetworkAdapter -VMMServer localhost -JobGroup $VMJobGroup -MACAddress "00-00-00-00-00-00" -MACAddressType Static -Synthetic -EnableVMNetworkOptimization $false -EnableMACAddressSpoofing $false -IPv4AddressType Static -IPv6AddressType Dynamic -VMNetwork $VMNetwork 
 
 Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 1 -JobGroup $VMJobGroup 
