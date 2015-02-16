@@ -88,7 +88,7 @@ Set-SCVMConfiguration -VMConfiguration $virtualMachineConfiguration -VMHost $vmH
 Update-SCVMConfiguration -VMConfiguration $virtualMachineConfiguration
 
 $NICConfiguration = Get-SCVirtualNetworkAdapterConfiguration -VMConfiguration $virtualMachineConfiguration | where { $_.ID -eq "d519c709-e800-4105-bce5-dccdeedce03a" } ### Replace network
-$staticIPv4Pool = Get-SCStaticIPAddressPool -Name "External VMs" -ID "d4997482-b9de-46b4-a82e-deb59025a5a1" ### Replace IP Pool
+$staticIPv4Pool = Get-SCStaticIPAddressPool | Where-Object {$_.LogicalNetworkDefinition -match (Get-SCLogicalNetworkDefinition | Where-Object {$_.LogicalNetwork -match $VMNetwork.LogicalNetwork}).name}
 $macAddressPool = Get-SCMACAddressPool -Name "Default MAC address pool"
 Set-SCVirtualNetworkAdapterConfiguration -VirtualNetworkAdapterConfiguration $NICConfiguration -IPv4Address "$IPAddress" -IPv4AddressPool $staticIPv4Pool -PinIPv4AddressPool $true -IPv6Address "" -PinIPv6AddressPool $false -MACAddress "" -MACAddressPool $macAddressPool
 
