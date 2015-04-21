@@ -1,16 +1,32 @@
-Function Get-MailboxReport ($UserFile, $ReportFile) {
-$Users=Get-Content $UserFile
-$Report=New-Object System.Object
+Function Get-MailboxReport ($Company) {
 $FullReport=@()
-Foreach ($User in $Users) {
-$Report=New-Object System.Object
-$UserName=$User
-$EmailAddress=(Get-Mailbox -Identity $User).PrimarySMTPAddress
-$MailboxSize=(Get-Mailbox -Identity $User | Get-MailboxStatistics).TotalItemSize.Value
-$Report | Add-Member -Type NoteProperty -Name UserName -Value $UserName
-$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value $EmailAddress
-$Report | Add-Member -Type NoteProperty -Name "Mailbox Size" -value $MailBoxSize
-$FullReport+=$Report
+
+$Contacts=Get-Contact -OrganizationalUnit $Company
+$Contacts | Foreach {
+	$Report=New-Object System.Object
+	$Report | Add-Member -Type NoteProperty -Name Name -Value $_.Name
+	$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value $_.WindowsEmailAddress
+	$Report | Add-Member -Type NoteProperty -Name "Mailbox Size" -value "Email Contact"
+	$FullReport+=$Report	
 }
+
+$DistributionGroups=Get-DistributionGroup -OrganizationalUnit $Company
+$DistributionGroups | Foreach {
+	$Report=New-Object System.Object
+	$Report | Add-Member -Type NoteProperty -Name Name -Value $_.Name
+	$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value $_.PrimarySMTPAddress
+	$Report | Add-Member -Type NoteProperty -Name "Mailbox Size" -value "Distribution Group"
+	$FullReport+=$Report
+}
+
+$Mailboxes=Get-Mailbox -OrganizationalUnit $Company
+$Mailboxes | Foreach {
+	$Report=New-Object System.Object
+	$Report | Add-Member -Type NoteProperty -Name Name -Value $_.Name
+	$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value $_.PrimarySMTPAddress
+	$Report | Add-Member -Type NoteProperty -Name "Mailbox Size" -value ($_ | Get-MailboxStatistics).TotalItemSize.Value
+	$FullReport+=$Report
+}
+
 $FullReport | Sort-Object -Property "Mailbox Size" -Descending
 }
