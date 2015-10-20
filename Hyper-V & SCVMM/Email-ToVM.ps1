@@ -58,8 +58,12 @@ Function Get-OutlookInBox
 $Email=(Get-OutlookInBox | where-object {$_.subject -eq "VM Creation"} | select -first 1 -Property body | fl *)
 $String=$Email | Out-String
 $SubString=$String.Substring(20) | Out-String
-$VMName=($SubString.Substring(15,15)).Trim()
+$VMName=($SubString.Substring(10,16)).Trim()
 $VMCPU=($SubString.Substring(30,30)).Trim()
 $VMRAM=($SubString.Substring(44,44)).Trim()
 $CDRIVE=($SubString.Substring(70,40)).Trim()
 $DDRIVE=($SubString.Substring(110,44)).Trim()
+If ($VMName -like "Name*" -and $VMCPU -like "CPU*" -and $VMRAM -like "RAM*" -and $CDRIVE -like "CDrive*" -and $DDRIVE -like "DDrive*"){
+$VMConfig=@{"Name" = $VMName.Replace('Name: ',''); "CPU" = $VMCPU.Replace('CPU: ',''); "CDrive" = $CDRIVE.Replace('CDrive: ',''); "DDrive" = $DDRIVE.Replace('DDrive: ',''); "RAM" = $VMRAM.Replace('RAM: ','')}
+$VMConfig
+}
