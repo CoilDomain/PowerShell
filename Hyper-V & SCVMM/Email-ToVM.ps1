@@ -1,69 +1,24 @@
 Function Get-OutlookInBox
 {
-  <#
-   .Synopsis
-    This function returns InBox items from default Outlook profile
-   .Description
-    This function returns InBox items from default Outlook profile. It
-    uses the Outlook interop assembly to use the olFolderInBox enumeration.
-    It creates a custom object consisting of Subject, ReceivedTime, Importance,
-    SenderName for each InBox item.
-    *** Important *** depending on the size of your InBox items this function
-    may take several minutes to gather your InBox items. If you anticipate
-    doing multiple analysis of the data, you should consider storing the
-    results into a variable, and using that.
-   .Example
-    Get-OutlookInbox |
-    where { $_.ReceivedTime -gt [datetime]"5/5/11" -AND $_.ReceivedTime -lt `
-    [datetime]"5/10/11" } | sort importance
-    Displays Subject, ReceivedTime, Importance, SenderName for all InBox items that
-    are in InBox between 5/5/11 and 5/10/11 and sorts by importance of the email.
-   .Example
-    Get-OutlookInbox | Group-Object -Property SenderName | sort-Object Count
-    Displays Count, SenderName and grouping information for all InBox items. The most
-    frequently used contacts appear at bottom of list.
-   .Example
-    $InBox = Get-OutlookInbox
-    Stores Outlook InBox items into the $InBox variable for further
-    "offline" processing.
-   .Example
-    ($InBox | Measure-Object).count
-    Displays the number of messages in InBox Items
-   .Example
-    $InBox | where { $_.subject -match '2011 Scripting Games' } |
-     sort ReceivedTime -Descending | select subject, ReceivedTime -last 5
-    Uses $InBox variable (previously created) and searches subject field
-    for the string '2011 Scripting Games' it then sorts by the date InBox.
-    This sort is descending which puts the oldest messages at bottom of list.
-    The Select-Object cmdlet is then used to choose only the subject and ReceivedTime
-    properties and then only the last five messages are displayed. These last
-    five messages are the five oldest messages that meet the string.
-   .Notes
-    NAME:  Get-OutlookInbox
-    AUTHOR: ed wilson, msft
-    LASTEDIT: 05/13/2011 08:36:42
-    KEYWORDS: Microsoft Outlook, Office
-    HSG: HSG-05-26-2011
-   .Link
-     Http://www.ScriptingGuys.com/blog
- #Requires -Version 2.0
- #>
- Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null
- $olFolders = "Microsoft.Office.Interop.Outlook.olDefaultFolders" -as [type]
- $outlook = new-object -comobject outlook.application
- $namespace = $outlook.GetNameSpace("MAPI")
- $folder = $namespace.getDefaultFolder($olFolders::olFolderInBox)
- $folder.items 
+Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null
+$olFolders = "Microsoft.Office.Interop.Outlook.olDefaultFolders" -as [type]
+$outlook = new-object -comobject outlook.application
+$namespace = $outlook.GetNameSpace("MAPI")
+$folder = $namespace.getDefaultFolder($olFolders::olFolderInbox)
+$folder.items
 }
-$Email=(Get-OutlookInBox | where-object {$_.subject -eq "VM Creation"} | select -first 1 -Property body | fl *)
-$String=$Email | Out-String
+$Emails=(Get-OutlookInBox | where-object {$_.subject -eq "VM Creation"} | Select -First 1)
+Foreach ($Email in $Emails){
+$String=$Email.body | Out-String
 $SubString=$String.Replace('Body : ',"`n")
-$VMName=($SubString.Substring(1,16)).Trim()
-$VMCPU=($SubString.Substring(30,25)).Trim()
-$VMRAM=($SubString.Substring(44,39)).Trim()
-$CDRIVE=($SubString.Substring(70,40)).Trim()
-$DDRIVE=($SubString.Substring(110,44)).Trim()
+$SubString=$SubString -Split "`n"
+$VMName=($SubString | Where-Object {$_ -like "Name*"}).Trim()
+$VMCPU=($SubString | Where-Object {$_ -like "CPU*"}).Trim()
+$VMRAM=($SubString | Where-Object {$_ -like "RAM*"}).Trim()
+$CDRIVE=($SubString | Where-Object {$_ -like "CDrive*"}).Trim()
+$DDRIVE=($SubString | Where-Object {$_ -like "DDrive*"}).Trim()
 If ($VMName -like "Name*" -and $VMCPU -like "CPU*" -and $VMRAM -like "RAM*" -and $CDRIVE -like "CDrive*" -and $DDRIVE -like "DDrive*"){
 $VMConfig=@{"Name" = $VMName.Replace('Name: ',''); "CPU" = $VMCPU.Replace('CPU: ',''); "CDrive" = $CDRIVE.Replace('CDrive: ',''); "DDrive" = $DDRIVE.Replace('DDrive: ',''); "RAM" = $VMRAM.Replace('RAM: ','')}
 $VMConfig
+}
 }
