@@ -1,14 +1,18 @@
-Function Get-OutlookInBox
-{
-Add-type -assembly "Microsoft.Office.Interop.Outlook" | out-null
-$olFolders = "Microsoft.Office.Interop.Outlook.olDefaultFolders" -as [type]
-$outlook = new-object -comobject outlook.application
-$namespace = $outlook.GetNameSpace("MAPI")
-$folder = $namespace.getDefaultFolder($olFolders::olFolderInbox)
-$folder.items
-}
-$Emails=(Get-OutlookInBox | where-object {$_.subject -eq "VM Creation"} | Select -First 1)
+Add-Type -AssemblyName microsoft.office.interop.outlook
+$olFolders = "Microsoft.Office.Interop.Outlook.OlDefaultFolders" -as [type]
+$outlook = New-Object -ComObject outlook.application
+$namespace = $Outlook.GetNameSpace("mapi")
+$inbox = $namespace.getDefaultFolder($olFolders::olFolderInbox)
+$MoveTarget = $inbox.Folders.item("VM Creation")
+$onedayback = (get-date).AddDays(-10)
+$items = $inbox.items
+$filter = "[Subject] = 'VM Creation'"
+$inbox = $namespace.GetDefaultFolder($olFolders::olFolderInbox).Items.Restrict($filter)
+$inbox.count
+$Emails = $inbox
+
 Foreach ($Email in $Emails){
+
 $String=$Email.body | Out-String
 $SubString=$String.Replace('Body : ',"`n")
 $SubString=$SubString -Split "`n"
@@ -20,5 +24,6 @@ $DDRIVE=($SubString | Where-Object {$_ -like "DDrive*"}).Trim()
 If ($VMName -like "Name*" -and $VMCPU -like "CPU*" -and $VMRAM -like "RAM*" -and $CDRIVE -like "CDrive*" -and $DDRIVE -like "DDrive*"){
 $VMConfig=@{"Name" = $VMName.Replace('Name: ',''); "CPU" = $VMCPU.Replace('CPU: ',''); "CDrive" = $CDRIVE.Replace('CDrive: ',''); "DDrive" = $DDRIVE.Replace('DDrive: ',''); "RAM" = $VMRAM.Replace('RAM: ','')}
 $VMConfig
+
 }
 }
