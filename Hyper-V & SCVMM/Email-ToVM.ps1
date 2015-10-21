@@ -42,8 +42,8 @@ $inbox.Folders.Item("VM Creation WIP").items | Foreach {
 	$o = New-Object -com Outlook.Application
 	$mail = $o.CreateItem(0)
 	$mail.subject = "Re: VM Creation"
-	$mail.body = "Your VM is being created, you will receive an email once it's done and ready to be configured `
-	"+$_.Body
+	$mail.body = "Your VM is being created, you will receive an email once it's done and ready to be configured. `
+	`n"+$_.Body
 	$mail.To = $_.SenderEmailAddress
 	$mail.Send()
 }
