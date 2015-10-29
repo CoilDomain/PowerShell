@@ -1,26 +1,27 @@
-$Users=Get-Mailbox | Where-Object {($_.DistinguishedName -like "*Disabled Users*") -and ($_.DistinguishedName -notlike "*unofficial*")}
+$Users=Get-Content Users.txt
+
 
 Function New-PSTExportJob ($UserName){ 
-$FullPath="\\MailServer\MailExport\"+$UserName+".pst"
-New-MailboxExportRequest -Mailbox $UserName -FilePath $FullPath -Suspend
+$FullPath="\\Server\Share$\"+$UserName+".pst"
+New-MailboxExportRequest -Mailbox $UserName -FilePath $FullPath -Suspend -AcceptLargeDataLoss -BadItemLimit unlimited -ContentFilter {Received -gt "10/28/2015 10:50AM"}
 }
 
 Foreach ($User in $Users) {
-New-PSTExportJob -Username $User.samaccountName 
+New-PSTExportJob -Username (Get-Mailbox "$User").samaccountName 
 }
 
 Function Start-ExportJobs ($Rate) {
-Write-Output (Get-MailboxExportRequest -Status completed | measure).count
+Write-Host "Pending:"(Get-MailboxExportRequest -Status Suspended | measure).count "In Progress:" (Get-MailboxExportRequest -Status InProgress | measure).count "Completed:" (Get-MailboxExportRequest -Status Completed | measure).count
 If (!(Get-MailboxExportRequest -Status InProgress)) { 
 Get-MailboxExportRequest | Where-Object {$_.Status -match "Suspended"} | Select -First $Rate | Resume-MailboxExportRequest
 Sleep 30
 Start-ExportJobs -Rate $Rate
 }
 ElseIf ((Get-MailboxExportRequest -Status InProgress)) { 
-Sleep 30
+Sleep 300
 Start-ExportJobs -Rate $Rate
 }
 ElseIf (!(Get-MailboxExportRequest -Status InProgress,Queued,Suspended)) {}
 }
 
-Start-ExportJobs -Rate 2
+Start-ExportJobs -Rate 4
