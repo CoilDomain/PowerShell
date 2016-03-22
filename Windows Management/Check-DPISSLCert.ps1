@@ -1,4 +1,3 @@
-$Serial=""
 If (!(ls C:\Support)) {mkdir C:\Support}
 if (!(get-command psexec.exe)) {
 
@@ -18,7 +17,7 @@ $Computers=Get-ADComputer -Property * -filter {(OperatingSystem -notlike "Window
 $computers | foreach {
 $ComputerName=$_.Name
 
-If (( Test-Connection $ComputerName -Count 1 -TimeToLive 1 -ErrorAction SilentlyContinue)) {psexec \\$ComputerName certutil -verifystore root $Serial > C:\Support\CertCheck\$ComputerName.txt}
+If (( Test-Connection $ComputerName -Count 1 -TimeToLive 1 -ErrorAction SilentlyContinue)) {psexec \\$ComputerName certutil -store root | findstr "SonicWALL" > C:\Support\CertCheck\$ComputerName.txt}
 
 ElseIf (!( Test-Connection $ComputerName -Count 1 -TimeToLive 1 -ErrorAction SilentlyContinue)) {Write-Output "Offline" | Out-File C:\Support\CertCheck\$ComputerName.txt}
 }
@@ -45,5 +44,17 @@ $FullReport+=$Report
 }
 }
 
-$FullReport | Sort-Object -Property HasSSLCert | ConvertTo-HTML | Out-File C:\Support\CertCheck\Report.html
+$Header = @"
+<style>
+TABLE {border-width: 1px;border-style: solid;border-color: black;border-collapse: collapse;}
+TH {border-width: 1px;padding: 3px;border-style: solid;border-color: black;background-color: #6495ED;}
+TD {border-width: 1px;padding: 3px;border-style: solid;border-color: black;}
+</style>
+<title>
+Title of my Report
+</title>
+"@
 
+$FullReport | Where-Object {$_.HasSSLCert -match "True"} | ConvertTo-HTML -Head $Header | Out-File C:\Support\CertCheck\Report-HasCert.html
+$FullReport | Where-Object {$_.HasSSLCert -match "False"} | ConvertTo-HTML -Head $Header | Out-File C:\Support\CertCheck\Report-MissingCert.html
+$FullReport | Where-Object {$_.HasSSLCert -match "Offline"} | ConvertTo-HTML -Head $Header | Out-File C:\Support\CertCheck\Report-Offline.html
