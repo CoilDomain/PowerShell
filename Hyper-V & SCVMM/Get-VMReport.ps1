@@ -15,13 +15,12 @@ $StorageAllocation=($_ | Get-SCVirtualMachine | Get-SCVirtualHardDisk | Measure-
 	$Report | Add-Member -Type NoteProperty -Name "VM Count" -value $VMCount
 	$Report | Add-Member -Type NoteProperty -Name "Logical CPU Cores" -Value $_.LogicalProcessorCount
 	$Report | Add-Member -Type NoteProperty -Name "Virtual CPU Cores" -Value $CPUAllocation
-	$Report | Add-Member -Type NoteProperty -Name "Physical Memory" -Value $Memory
-	$Report | Add-Member -Type NoteProperty -Name "Free Memory" -Value $FreeMemory
-	$Report | Add-Member -Type NoteProperty -Name "Physical Disk" -value $TotalStorage
-	$Report | Add-Member -Type NoteProperty -Name "Free Disk Space" -value $FreeStorage
-	$Report | Add-Member -Type NoteProperty -Name "Total Allocated Space" -value $StorageAllocation
+	$Report | Add-Member -Type NoteProperty -Name "Physical Memory GB" -Value ([math]::Round($Memory))
+	$Report | Add-Member -Type NoteProperty -Name "Free Memory GB" -Value ([math]::Round($FreeMemory))
+	$Report | Add-Member -Type NoteProperty -Name "Physical Disk GB" -value ([math]::Round($TotalStorage))
+	$Report | Add-Member -Type NoteProperty -Name "Free Disk Space GB" -value ([math]::Round($FreeStorage))
+	$Report | Add-Member -Type NoteProperty -Name "Total Allocated Space GB" -value ([math]::Round($StorageAllocation))
 	$FullReport+=$Report	
 }
 $FullReport | Sort-Object -Property Name
 }
-Get-VMReport -Server cloudmgr
