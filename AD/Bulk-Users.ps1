@@ -7,7 +7,7 @@ $accounts | foreach {
 $DisplayName=$_.FirstName+" "+$_.LastName
 $Company=$_.Company
 $OU=Get-ADOrganizationalUnit -Filter * | Where-Object {$_.DistinguishedName -like "*$Company*"}
-$Description=$Description=$Company+" User"
+$Description=$Company+" User"
 
 If (!($_.Username)) {
 $SamAccountName=$_.FirstName[0]+$_.LastName
