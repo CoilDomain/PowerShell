@@ -6,6 +6,7 @@ $Contacts | Foreach {
 	$Report=New-Object System.Object
 	$Report | Add-Member -Type NoteProperty -Name Name -Value $_.Name
 	$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value $_.WindowsEmailAddress
+	$Report | Add-Member -Type NoteProperty -Name "legacyExchangeDN"  -Value  $Null
 	$Report | Add-Member -Type NoteProperty -Name "Members" -Value $Null
 	$Report | Add-Member -Type NoteProperty -Name "Mailbox Size" -value "Email Contact"
 	$Report | Add-Member -Type NoteProperty -Name "Item Count" -value $Null
@@ -24,7 +25,8 @@ $DistributionGroups | Foreach {
 $Members=$_ | Get-DistributionGroupMember
 	$Report=New-Object System.Object
 	$Report | Add-Member -Type NoteProperty -Name Name -Value $_.Name
-	$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value $_.PrimarySMTPAddress
+	$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value ((Get-adgroup "$_" -Properties *).proxyaddresses | findstr SMTP).replace("SMTP:","")
+	$Report | Add-Member -Type NoteProperty -Name "legacyExchangeDN"  -Value $_.LegacyExchangeDN
 	$Report | Add-Member -Type NoteProperty -Name "Members" -Value ((0..(($Members | measure).count -1 ) | foreach {($Members)[$_].name}) -join "; ")
 	$Report | Add-Member -Type NoteProperty -Name "Mailbox Size" -value "Distribution Group"
 	$Report | Add-Member -Type NoteProperty -Name "Item Count" -value $Null
@@ -42,7 +44,8 @@ $Mailboxes=Get-Mailbox -OrganizationalUnit $Company
 $Mailboxes | Foreach {
 	$Report=New-Object System.Object
 	$Report | Add-Member -Type NoteProperty -Name Name -Value $_.Name
-	$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value $_.PrimarySMTPAddress
+	$Report | Add-Member -Type NoteProperty -Name "Email Address" -Value ((Get-adUser -Filter {Name -eq $_} -Properties *).proxyaddresses | findstr SMTP).replace("SMTP:","")
+	$Report | Add-Member -Type NoteProperty -Name "legacyExchangeDN"  -Value $_.LegacyExchangeDN
 	$Report | Add-Member -Type NoteProperty -Name "Members" -Value $Null
 	$Report | Add-Member -Type NoteProperty -Name "Mailbox Size" -value ($_ | Get-MailboxStatistics).TotalItemSize.Value
 	$Report | Add-Member -Type NoteProperty -Name "Item Count" -value ($_ | Get-MailboxStatistics).ItemCount
@@ -58,3 +61,5 @@ $Mailboxes | Foreach {
 
 $FullReport | Sort-Object -Property "Mailbox Size" -Descending
 }
+Get-MailboxReport -Company "Users Auditz" | Export-CSV ./Auditz.csv
+Notepad ./Auditz.csv
